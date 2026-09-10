@@ -1,5 +1,5 @@
 """
-CodeLingo backend — FastAPI app.
+CodeLingo backend â€” FastAPI app.
 
 Two small endpoints power the whole product:
   POST /api/explain  {code}                -> line-by-line plain-English translation
@@ -18,6 +18,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from explainer import explain_code
+from challenges import CHALLENGES, find_challenge
 
 app = FastAPI(title="CodeLingo")
 
@@ -31,6 +32,10 @@ class ExplainRequest(BaseModel):
 class CheckRequest(BaseModel):
     expected: str
     submitted: str
+
+
+class GoalRequest(BaseModel):
+    goal: str
 
 
 SAMPLES = {
@@ -82,6 +87,20 @@ def api_samples():
     return SAMPLES
 
 
+@app.get("/api/challenges")
+def api_challenges():
+    return CHALLENGES
+
+
+@app.post("/api/match-goal")
+def api_match_goal(req: GoalRequest):
+    matches = find_challenge(req.goal)
+    if not matches:
+        return {"matched": False, "available": list(CHALLENGES.keys())}
+    cid = matches[0]
+    return {"matched": True, "id": cid, "title": CHALLENGES[cid]["title"]}
+
+
 @app.post("/api/check")
 def api_check(req: CheckRequest):
     a, b = _normalize(req.expected), _normalize(req.submitted)
@@ -89,13 +108,13 @@ def api_check(req: CheckRequest):
     correct = ratio >= 0.72 and bool(b.strip())
 
     if not b.strip():
-        hint = "Give it a try — even a rough guess helps you learn the shape of the line."
+        hint = "Give it a try â€” even a rough guess helps you learn the shape of the line."
     elif correct:
         hint = "Nailed it."
     elif ratio >= 0.5:
         hint = "Close! Check the exact method names, quotes, and punctuation."
     else:
-        hint = "Not quite yet — re-read the English line above and try to match its structure piece by piece."
+        hint = "Not quite yet â€” re-read the English line above and try to match its structure piece by piece."
 
     return {"ratio": round(ratio, 2), "correct": correct, "hint": hint}
 
