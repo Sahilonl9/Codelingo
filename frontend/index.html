@@ -15,6 +15,7 @@
   <nav class="tabs" role="tablist">
     <button class="tab active" data-view="explain" role="tab" aria-selected="true">Explain</button>
     <button class="tab" data-view="practice" role="tab" aria-selected="false">Practice</button>
+    <button class="tab" data-view="build" role="tab" aria-selected="false">Build</button>
   </nav>
   <div class="xp-badge" id="xpBadge" title="Practice XP and streak">
     <span id="xpValue">0</span> XP · <span id="streakValue">0</span> streak
@@ -102,6 +103,31 @@ def search_articles(request):
         <button id="skipBtn" class="btn-secondary">Skip line</button>
         <button id="nextBtn" class="btn-primary" hidden>Next line →</button>
       </div>
+    </div>
+  </section>
+
+  <!-- ============ BUILD VIEW ============ -->
+  <section id="view-build" class="view">
+    <div class="build-intro">
+      <p class="build-lead">Tell it what you want to build. It'll break the goal into English steps — you write the matching code next to each one and check it as you go.</p>
+      <div class="goal-row">
+        <input id="goalInput" type="text" placeholder="e.g. a calculator, a to-do list..." autocomplete="off" />
+        <button id="goalGoBtn" class="btn-primary">Break it down</button>
+      </div>
+      <div class="sample-links">
+        Or try:
+        <button class="btn-link" data-goal="calculator">a calculator</button>
+        <button class="btn-link" data-goal="to-do list">a to-do list</button>
+      </div>
+      <p id="goalMiss" class="muted" hidden></p>
+    </div>
+
+    <div id="buildWrap" class="build-wrap" hidden>
+      <div class="build-header">
+        <h3 id="buildTitle"></h3>
+        <div class="build-score" id="buildScore">0 / 0 verified</div>
+      </div>
+      <div id="buildRows" class="build-rows"></div>
     </div>
   </section>
 
