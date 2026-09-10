@@ -282,6 +282,90 @@ code.inline { background: var(--paper-2); padding: 0 3px; border-radius: 3px; fo
 
 .practice-nav { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
 
+/* ---------- build ---------- */
+.build-lead { font-size: 15px; color: var(--ink-muted); max-width: 60ch; margin: 0 0 16px; }
+.goal-row { display: flex; gap: 10px; flex-wrap: wrap; }
+#goalInput {
+  flex: 1;
+  min-width: 220px;
+  background: var(--paper-2);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-family: var(--sans);
+  font-size: 14px;
+  color: var(--ink);
+}
+#goalInput:focus { outline: 2px solid var(--teal); outline-offset: -1px; }
+
+.build-wrap { margin-top: 28px; }
+.build-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 10px;
+  margin-bottom: 16px;
+}
+.build-header h3 { margin: 0; font-size: 17px; }
+.build-score { font-family: var(--mono); font-size: 13px; color: var(--teal); }
+
+.build-rows { display: flex; flex-direction: column; gap: 18px; }
+
+.brow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  padding: 16px 0;
+  border-bottom: 1px dashed var(--rule);
+}
+.brow-instruction { display: flex; gap: 10px; font-size: 15px; line-height: 1.5; }
+.brow-num {
+  flex: none;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--paper);
+  background: var(--ink);
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+}
+.brow-text { flex: 1; }
+
+.brow-input {
+  width: 100%;
+  min-height: 56px;
+  background: var(--paper-2);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  font-family: var(--mono);
+  font-size: 13px;
+  padding: 10px;
+  color: var(--ink);
+}
+.brow-input:focus { outline: 2px solid var(--teal); outline-offset: -1px; }
+
+.brow-actions { display: flex; align-items: center; gap: 14px; margin-top: 8px; }
+
+.brow-feedback {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  border-left: 3px solid var(--teal);
+  background: var(--teal-tint);
+}
+.brow-feedback.wrong { border-left-color: var(--red); background: var(--red-tint); }
+.mono-inline { font-family: var(--mono); }
+
+@media (max-width: 640px) {
+  .brow { grid-template-columns: 1fr; }
+}
+
 footer {
   text-align: center;
   font-size: 12px;
@@ -292,4 +376,4 @@ footer {
 @media (max-width: 560px) {
   .iline { grid-template-columns: 28px 1fr; }
   main { padding: 20px 14px 60px; }
-}
+  }
