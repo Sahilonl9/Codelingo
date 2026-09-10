@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CodeLingo — read code like fluent English</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wordmark">CodeLingo <span class="wordmark-sub">/ read code like fluent English</span></div>
+  <nav class="tabs" role="tablist">
+    <button class="tab active" data-view="explain" role="tab" aria-selected="true">Explain</button>
+    <button class="tab" data-view="practice" role="tab" aria-selected="false">Practice</button>
+  </nav>
+  <div class="xp-badge" id="xpBadge" title="Practice XP and streak">
+    <span id="xpValue">0</span> XP · <span id="streakValue">0</span> streak
+  </div>
+</header>
+
+<main>
+
+  <!-- ============ EXPLAIN VIEW ============ -->
+  <section id="view-explain" class="view active">
+    <div class="explain-controls">
+      <textarea id="codeInput" spellcheck="false" placeholder="Paste a snippet you don't fully understand yet...">from django.db.models import Q
+from django.shortcuts import render
+from .models import Article  # Replace with your actual model
+
+def search_articles(request):
+    # Get the search query from the URL parameter (e.g., /search/?q=python)
+    query = request.GET.get('q', '').strip()
+    results = []
+
+    if query:
+        # Search for the token across title or content fields
+        results = Article.objects.filter(
+            Q(title__icontains=query) | Q(content__icontains=query)
+        ).distinct()
+
+    return render(request, 'search_results.html', {
+        'query': query,
+        'results': results
+    })</textarea>
+
+      <div class="controls-row">
+        <button id="explainBtn" class="btn-primary">Explain this code</button>
+        <div class="sample-links">
+          Try a sample:
+          <button class="btn-link" data-sample="django_search">Django search view</button>
+          <button class="btn-link" data-sample="list_comprehension">List comprehension</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="explain-toolbar" id="explainToolbar" hidden>
+      <button id="readAllBtn" class="btn-secondary">▸ Read explanations aloud</button>
+      <button id="stopReadBtn" class="btn-secondary" hidden>■ Stop reading</button>
+      <button id="toPracticeBtn" class="btn-secondary">Practice this snippet →</button>
+    </div>
+
+    <div id="linesOutput" class="interlinear"></div>
+  </section>
+
+  <!-- ============ PRACTICE VIEW ============ -->
+  <section id="view-practice" class="view">
+    <div id="practiceEmpty" class="practice-empty">
+      <p>No practice set loaded yet.</p>
+      <p class="muted">Explain a snippet first, then hit "Practice this snippet," or start with a built-in one below.</p>
+      <div class="sample-links">
+        <button class="btn-link" data-sample="django_search">Django search view</button>
+        <button class="btn-link" data-sample="list_comprehension">List comprehension</button>
+      </div>
+    </div>
+
+    <div id="practiceCardWrap" class="practice-card-wrap" hidden>
+      <div class="practice-progress">
+        Line <span id="progressCurrent">1</span> of <span id="progressTotal">1</span>
+        <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      </div>
+
+      <div class="practice-card">
+        <div class="practice-card-label">Read this in plain English, then write the matching code</div>
+        <p class="practice-explanation" id="practiceExplanation"></p>
+        <button id="speakCardBtn" class="btn-icon" title="Read this line aloud">🔊 Hear it</button>
+
+        <textarea id="practiceInput" spellcheck="false" placeholder="Type the code that matches this English line..."></textarea>
+
+        <div class="practice-actions">
+          <button id="checkBtn" class="btn-primary">Check my answer</button>
+          <button id="revealBtn" class="btn-link">Show the answer</button>
+        </div>
+
+        <div id="feedback" class="feedback" hidden></div>
+        <div id="answerReveal" class="answer-reveal" hidden></div>
+      </div>
+
+      <div class="practice-nav">
+        <button id="skipBtn" class="btn-secondary">Skip line</button>
+        <button id="nextBtn" class="btn-primary" hidden>Next line →</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  Voice playback uses your browser's built-in speech synthesis — no audio is uploaded anywhere.
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
