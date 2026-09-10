@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// CodeLingo frontend — no framework, just fetch() + DOM + the Web Speech API.
+// CodeLingo frontend â€” no framework, just fetch() + DOM + the Web Speech API.
 // ---------------------------------------------------------------------------
 
 const state = {
@@ -117,9 +117,9 @@ function renderLines(lines) {
       <div>
         <div class="code" style="padding-left:${indentPx}px">${escapeHtml(line.code.trim())}</div>
         <div class="translation" style="padding-left:${indentPx}px">
-          <span class="glyph">↳</span>
+          <span class="glyph">â†³</span>
           <span class="text">${formatExplanation(line.explanation)}</span>
-          <button class="speak" title="Read this line aloud" data-idx="${idx}">🔊</button>
+          <button class="speak" title="Read this line aloud" data-idx="${idx}">ðŸ”Š</button>
         </div>
       </div>`;
     container.appendChild(row);
@@ -139,7 +139,7 @@ function highlightRow(idx, on) {
 }
 
 // ---------------------------------------------------------------------------
-// Voice layer (Web Speech API — runs entirely in the browser)
+// Voice layer (Web Speech API â€” runs entirely in the browser)
 // ---------------------------------------------------------------------------
 let currentUtterance = null;
 
@@ -287,7 +287,7 @@ function advancePractice() {
     $("#practiceCardWrap").hidden = true;
     $("#practiceEmpty").hidden = false;
     $("#practiceEmpty").innerHTML =
-      `<p>Set complete — nice work.</p><p class="muted">${state.xp} XP total, ${state.streak} in a row right now.</p>
+      `<p>Set complete â€” nice work.</p><p class="muted">${state.xp} XP total, ${state.streak} in a row right now.</p>
        <div class="sample-links">
          <button class="btn-link" data-sample="django_search">Django search view</button>
          <button class="btn-link" data-sample="list_comprehension">List comprehension</button>
@@ -302,6 +302,123 @@ function advancePractice() {
     });
   }
 }
+
+// ---------------------------------------------------------------------------
+// Build view â€” goal -> English curriculum -> learner writes the code
+// ---------------------------------------------------------------------------
+let CHALLENGES = {};
+const buildState = { steps: [], verified: [] };
+
+fetch("/api/challenges").then((r) => r.json()).then((data) => { CHALLENGES = data; });
+
+async function loadGoal(goalText) {
+  $("#goalMiss").hidden = true;
+  const res = await fetch("/api/match-goal", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ goal: goalText }),
+  });
+  const result = await res.json();
+
+  if (!result.matched) {
+    $("#buildWrap").hidden = true;
+    const miss = $("#goalMiss");
+    miss.hidden = false;
+    miss.innerHTML = `No built-in tutorial for that yet. Try one of the goals above â€” or see the README's "extend first" notes for wiring this up to an LLM so it can handle any goal.`;
+    return;
+  }
+
+  const challenge = CHALLENGES[result.id];
+  buildState.steps = challenge.steps;
+  buildState.verified = challenge.steps.map(() => null); // null | true | false
+
+  $("#buildTitle").textContent = challenge.title;
+  $("#buildWrap").hidden = false;
+  renderBuildRows();
+}
+
+function renderBuildRows() {
+  const container = $("#buildRows");
+  container.innerHTML = "";
+
+  buildState.steps.forEach((step, idx) => {
+    const row = document.createElement("div");
+    row.className = "brow";
+    row.innerHTML = `
+      <div class="brow-instruction">
+        <span class="brow-num">${idx + 1}</span>
+        <span class="brow-text">${formatExplanation(step.explanation)}</span>
+      </div>
+      <div class="brow-code">
+        <textarea class="brow-input" data-idx="${idx}" spellcheck="false" placeholder="Write the matching line of code..."></textarea>
+        <div class="brow-actions">
+          <button class="btn-secondary brow-verify" data-idx="${idx}">Verify</button>
+          <button class="btn-link brow-reveal" data-idx="${idx}">Show answer</button>
+        </div>
+        <div class="brow-feedback" data-idx="${idx}" hidden></div>
+      </div>`;
+    container.appendChild(row);
+  });
+
+  container.querySelectorAll(".brow-verify").forEach((btn) => {
+    btn.addEventListener("click", () => verifyBuildRow(Number(btn.dataset.idx)));
+  });
+  container.querySelectorAll(".brow-reveal").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const idx = Number(btn.dataset.idx);
+      const fb = document.querySelector(`.brow-feedback[data-idx="${idx}"]`);
+      fb.hidden = false;
+      fb.classList.remove("wrong");
+      fb.innerHTML = `<span class="mono-inline">${escapeHtml(buildState.steps[idx].code)}</span>`;
+    });
+  });
+
+  updateBuildScore();
+}
+
+async function verifyBuildRow(idx) {
+  const textarea = document.querySelector(`.brow-input[data-idx="${idx}"]`);
+  const submitted = textarea.value;
+  const expected = buildState.steps[idx].code;
+
+  const res = await fetch("/api/check", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ expected, submitted }),
+  });
+  const result = await res.json();
+
+  const wasUnverified = buildState.verified[idx] === null;
+  buildState.verified[idx] = result.correct;
+
+  const fb = document.querySelector(`.brow-feedback[data-idx="${idx}"]`);
+  fb.hidden = false;
+  fb.classList.toggle("wrong", !result.correct);
+  fb.textContent = `${result.correct ? "Pass â€” " : "Not yet â€” "}${result.hint}`;
+
+  if (wasUnverified) awardXp(result.correct ? 10 : 2, result.correct);
+  updateBuildScore();
+}
+
+function updateBuildScore() {
+  const total = buildState.verified.length;
+  const passed = buildState.verified.filter((v) => v === true).length;
+  $("#buildScore").textContent = `${passed} / ${total} verified`;
+}
+
+$("#goalGoBtn").addEventListener("click", () => {
+  const goal = $("#goalInput").value.trim();
+  if (goal) loadGoal(goal);
+});
+$("#goalInput").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") $("#goalGoBtn").click();
+});
+document.querySelectorAll("[data-goal]").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    $("#goalInput").value = btn.dataset.goal;
+    loadGoal(btn.dataset.goal);
+  });
+});
 
 // Explain the default sample on first load for a working demo out of the box.
 window.addEventListener("DOMContentLoaded", () => {
